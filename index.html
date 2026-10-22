@@ -7,29 +7,51 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        /* Yapay zeka cevaplarındaki yazı formatları (Kalın, eğik, listeler) */
         .ai-message-content p { margin-bottom: 0.5rem; }
         .ai-message-content strong { font-weight: 900; color: #000000; }
         .ai-message-content em { font-style: italic; color: #1f2937; }
         .ai-message-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
         .ai-message-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 0.5rem; }
         .ai-message-content code { background-color: #e5e7eb; padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-family: monospace; }
+        
+        /* Mikrofon dinlerken yanıp sönme animasyonu */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        .mic-active {
+            animation: pulse-red 1.5s infinite;
+            background-color: #ef4444 !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50 h-screen flex flex-col items-center">
-    <div class="w-full max-w-2xl flex flex-col h-full bg-white shadow-lg">
+    <div class="w-full max-w-2xl flex flex-col h-full bg-white shadow-lg relative">
         
-        <!-- LOGO VE KURUMSAL BAŞLIK -->
+        <!-- ÜST BAŞLIK KISMI: Logonun ikon hali ve renklendirilmiş NEXTAI yazısı -->
         <header class="bg-white border-b border-gray-200 py-4 flex flex-col items-center justify-center shadow-sm z-10">
             <div class="w-16 h-16 bg-white rounded-2xl shadow-md border border-gray-100 flex items-center justify-center mb-2 overflow-hidden p-1">
                 <img src="icon.png" alt="NextAI Icon" class="w-full h-full object-contain">
             </div>
-            <h1 class="text-[#0f172a] font-black text-xl tracking-[0.2em]">NEXTAI</h1>
+            <!-- "NEXT" siyah, "AI" ise logoya uygun mavi-turkuaz renk geçişli -->
+            <h1 class="font-black text-xl tracking-[0.2em] flex items-center justify-center">
+                <span class="text-[#0f172a]">NEXT</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-400">AI</span>
+            </h1>
         </header>
 
+        <!-- SOHBET ALANI -->
         <div id="chat-container" class="flex-1 p-4 overflow-y-auto flex flex-col gap-4 bg-gray-50"></div>
         
-        <div class="p-4 border-t bg-white flex gap-2">
-            <input type="text" id="user-input" class="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Bir mesaj yazın...">
+        <!-- GİRİŞ ALANI VE MİKROFON BUTONU -->
+        <div class="p-4 border-t bg-white flex gap-2 items-center">
+            <button id="mic-btn" class="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-xl" title="Sesle yaz">
+                🎤
+            </button>
+            <input type="text" id="user-input" class="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Bir mesaj yazın veya mikrofonu kullanın...">
             <button id="send-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Gönder</button>
         </div>
     </div>
@@ -38,26 +60,117 @@
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
+        const micBtn = document.getElementById('mic-btn');
 
+        // SENİN API ANAHTARIN
         const DEEPSEEK_API_KEY = "sk-f1e8e6c38c9b4678a0496e97983ed213";
 
+        // Sohbet geçmişi ve Yapay Zekanın Karakteri (System Prompt)
         let chatHistory = [
             {"role": "system", "content": "Senin adın NextAI. DeepSeek olduğunu asla söyleme. Kullanıcılara kendini NextAI isimli yardımcı bir yapay zeka asistanı olarak tanıt. ÖNEMLİ: Çok doğal, akıcı, samimi ve insan gibi bir dille konuş. Robotik veya resmi olma. Kullanıcıyla bir arkadaşınla sohbet ediyormuş gibi konuş. Kısa ve öz cevaplar ver, gereksiz uzatma. Cevaplarında önemli kelimeleri vurgulamak için markdown kullan (kalın yapmak için *kelime, eğik yapmak için *kelime)."}
         ];
 
+        // --- SESLİ OKUMA (TTS - Text to Speech) FONKSİYONU ---
+        // Yapay zekanın verdiği cevabı tarayıcının ses motoruyla okur.
+        function metniSesliOku(metin) {
+            // Markdown işaretlerini (*, #) sesten önce temizle ki "yıldız" demesin
+            let temizMetin = metin.replace(/[*#_]/g, '').replace(/-/g, ' ');
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Önceki konuşmayı durdur
+                const utterance = new SpeechSynthesisUtterance(temizMetin);
+                utterance.lang = 'tr-TR'; // Türkçe
+                utterance.rate = 1.0; // Hız
+                utterance.pitch = 1.0; // Ses tonu
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- AKILLI MİKROFONLA SESLİ YAZMA (STT - Speech to Text) ---
+        // Kullanıcı konuşurken yazıya döker. Sustuğunda 2.5 saniye bekler ve gönderir.
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'tr-TR';
+            recognition.continuous = true; // Sen susana kadar dinlemeye devam et
+            recognition.interimResults = true; // Konuşurken kelimeleri anlık göster
+            
+            let silenceTimer = null;
+            let isListening = false;
+
+            micBtn.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop(); // Butona tekrar basılırsa durdur
+                    return;
+                }
+                recognition.start();
+                micBtn.classList.add('mic-active'); // Butonu kırmızı yapıp yanıp söndür
+                userInput.placeholder = "Dinliyorum, konuşun...";
+            });
+
+            recognition.onstart = () => { isListening = true; };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                userInput.value = finalTranscript + interimTranscript;
+
+                // Kullanıcı konuştukça zamanlayıcıyı sıfırla
+                clearTimeout(silenceTimer);
+                
+                // Eğer 2.5 saniye susarsa mesajı gönder
+                silenceTimer = setTimeout(() => {
+                    if (userInput.value.trim() !== '') {
+                        recognition.stop(); 
+                        mesajGonder(); 
+                    }
+                }, 2500); 
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('mic-active'); // Yanıp sönmeyi durdur
+                userInput.placeholder = "Bir mesaj yazın veya mikrofonu kullanın...";
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Mikrofon hatası:", event.error);
+                isListening = false;
+                micBtn.classList.remove('mic-active');
+                userInput.placeholder = "Mikrofon hatası! İzin verdiğinizden emin olun.";
+            };
+        } else {
+            micBtn.style.display = 'none'; // Tarayıcı desteklemiyorsa butonu gizle
+        }
+
+        // --- KARŞILAMA MESAJI ---
+        // Sayfa açıldığında çalışır. Avatar olarak artık icon.png kullanılıyor.
         window.addEventListener('DOMContentLoaded', () => {
             const karsilamaMetni = "Geleceğe hoş geldiniz. Ben <b>NextAI</b>. Sıradanlığı yok etmek ve size sınırları aşan bir deneyim sunmak için tasarlandım. Evreni keşfetmeye hazır mısınız? 🌌🚀";
             const welcomeMsgDiv = document.createElement('div');
             welcomeMsgDiv.className = "flex gap-4 mt-4";
-            welcomeMsgDiv.innerHTML = '<div class="w-8 h-8 bg-blue-600 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold shadow-sm">N</div><div class="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none max-w-[80%] text-gray-800 text-sm shadow-sm">' + karsilamaMetni + '</div>';
+            // DİKKAT: 'N' harfi yerine <img> etiketi ile logomuz eklendi.
+            welcomeMsgDiv.innerHTML = '<div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center shadow-sm bg-white border border-gray-200 overflow-hidden"><img src="icon.png" class="w-full h-full object-cover"></div><div class="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none max-w-[80%] text-gray-800 text-sm shadow-sm">' + karsilamaMetni + '</div>';
             chatContainer.appendChild(welcomeMsgDiv);
             chatHistory.push({"role": "assistant", "content": karsilamaMetni.replace(/<[^>]*>?/gm, '')}); 
         });
 
+        // --- MESAJ GÖNDERME VE API İLETİŞİMİ ---
         async function mesajGonder() {
             const metin = userInput.value.trim();
             if (!metin) return;
 
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // AI konuşuyorsa sustur
+
+            // Kullanıcı mesajını ekrana bas
             const userMsgDiv = document.createElement('div');
             userMsgDiv.className = "flex gap-4 justify-end mt-4";
             userMsgDiv.innerHTML = '<div class="bg-blue-600 text-white text-sm p-3 rounded-xl rounded-tr-none max-w-[80%] shadow-sm">' + metin + '</div>';
@@ -67,10 +180,11 @@
 
             chatHistory.push({"role": "user", "content": metin});
 
+            // "Yazıyor..." animasyonu (Burada da 'N' yerine ikon kullanıldı)
             const loadingDiv = document.createElement('div');
             loadingDiv.className = "flex gap-4 mt-4 animate-pulse";
             loadingDiv.id = "loading-message";
-            loadingDiv.innerHTML = '<div class="w-8 h-8 bg-blue-600 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold shadow-sm">N</div><div class="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none max-w-[80%] text-gray-500 text-sm italic shadow-sm">Yazıyor...</div>';
+            loadingDiv.innerHTML = '<div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center shadow-sm bg-white border border-gray-200 overflow-hidden"><img src="icon.png" class="w-full h-full object-cover"></div><div class="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none max-w-[80%] text-gray-500 text-sm italic shadow-sm">Yazıyor...</div>';
             chatContainer.appendChild(loadingDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
@@ -86,18 +200,19 @@
                         messages: chatHistory,
                         temperature: 0.8,
                         max_tokens: 1000,
-                        stream: true
+                        stream: true // Harf harf akma özelliği açık
                     })
                 });
 
                 const loadingMsg = document.getElementById('loading-message');
                 if (loadingMsg) chatContainer.removeChild(loadingMsg);
 
+                // AI Mesaj Kutusu (Burada da 'N' yerine ikon kullanıldı)
                 const aiMsgDiv = document.createElement('div');
                 aiMsgDiv.className = "flex gap-4 mt-4";
                 const aiMsgContent = document.createElement('div');
                 aiMsgContent.className = "ai-message-content bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none max-w-[80%] text-gray-800 text-sm shadow-sm";
-                aiMsgDiv.innerHTML = '<div class="w-8 h-8 bg-blue-600 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold shadow-sm">N</div>';
+                aiMsgDiv.innerHTML = '<div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center shadow-sm bg-white border border-gray-200 overflow-hidden"><img src="icon.png" class="w-full h-full object-cover"></div>';
                 aiMsgDiv.appendChild(aiMsgContent);
                 chatContainer.appendChild(aiMsgDiv);
 
@@ -105,6 +220,7 @@
                 const decoder = new TextDecoder("utf-8");
                 let aiCevabi = "";
 
+                // Gelen veriyi harf harf oku ve ekrana bas
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -119,7 +235,7 @@
                                 const content = data.choices[0].delta.content || "";
                                 if (content) {
                                     aiCevabi += content;
-                                    aiMsgContent.innerHTML = marked.parse(aiCevabi);
+                                    aiMsgContent.innerHTML = marked.parse(aiCevabi); // Markdown'u HTML'e çevir
                                     chatContainer.scrollTop = chatContainer.scrollHeight;
                                 }
                             } catch (e) {}
@@ -128,6 +244,7 @@
                 }
                 
                 chatHistory.push({"role": "assistant", "content": aiCevabi});
+                metniSesliOku(aiCevabi); // Cevap bittiğinde sesli oku
 
             } catch (error) {
                 const loadingMsg = document.getElementById('loading-message');
