@@ -34,7 +34,7 @@
         const DEEPSEEK_API_KEY = "";
 
         let chatHistory = [
-            {"role": "system", "content": "Senin adın NextAI. DeepSeek olduğunu asla söyleme. Kullanıcılara kendini NextAI isimli yardımcı bir yapay zeka asistanı olarak tanıt. Cevaplarında önemli kelimeleri vurgulamak için markdown kullan (kalın yapmak için *kelime, eğik yapmak için *kelime)."}
+        {"role": "system", "content": "Senin adın NextAI. DeepSeek olduğunu asla söyleme. Kullanıcılara kendini NextAI isimli yardımcı bir yapay zeka asistanı olarak tanıt. ÖNEMLİ: Çok doğal, akıcı, samimi ve insan gibi bir dille konuş. Robotik veya resmi olma. Kullanıcıyla bir arkadaşınla sohbet ediyormuş gibi konuş. Kısa ve öz cevaplar ver, gereksiz uzatma. Cevaplarında önemli kelimeleri vurgulamak için markdown kullan (kalın yapmak için *kelime, eğik yapmak için *kelime)."},
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -72,11 +72,13 @@
     headers: {
         "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: chatHistory,
-        stream: false
-    })
+  body: JSON.stringify({
+    model: "deepseek-chat",
+    messages: chatHistory,
+    temperature: 0.8,
+    max_tokens: 1000,
+    stream: false
+})
 });
 
                 const data = await response.json();
