@@ -9,6 +9,8 @@
     tailwind.config = { darkMode: 'class' }
 </script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
     <style>
         .ai-message-content p { margin-bottom: 0.5rem; }
         .ai-message-content strong { font-weight: 900; color: #000000; }
@@ -99,7 +101,7 @@
         </div>
 
         <div class="flex flex-col gap-3">
-            <button class="flex items-center justify-center gap-3 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium">
+            <button id="googleLoginBtn" class="flex items-center justify-center gap-3 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
                 Google ile Devam Et
             </button>
@@ -434,14 +436,46 @@ if (loginBtn && loginModal) {
         loginModal.classList.add('hidden');
     });
 
-    // Google ve Facebook butonlarına tıklandığında uyarı ver
-    const authButtons = loginModal.querySelectorAll('button:not(#closeLoginBtn):not(#guestBtn)');
-    authButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            alert("Çok yakında! Gerçek giriş sistemi (Backend) eklendiğinde bu butonlar aktif olacak.");
-        });
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Firebase Ayarların
+    const firebaseConfig = {
+        apiKey: "AIzaSyBrIjai_cSm8K3Et59IoIiv8AbPfraiVTg",
+        authDomain: "nextai-4d45d.firebaseapp.com",
+        projectId: "nextai-4d45d",
+        storageBucket: "nextai-4d45d.firebasestorage.app",
+        messagingSenderId: "313597901332",
+        appId: "1:313597901332:web:dd95c7a740921f23488501"
+    };
+
+    // Firebase'i Başlat
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // Google Butonuna Tıklandığında Çalışacak Kod
+    document.addEventListener("DOMContentLoaded", () => {
+        const googleBtn = document.getElementById('googleLoginBtn');
+        
+        if (googleBtn) {
+            googleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                signInWithPopup(auth, provider)
+                    .then((result) => {
+                        const user = result.user;
+                        alert(Hoş geldin, ${user.displayName}! Başarıyla giriş yaptın.);
+                        document.getElementById('loginModal').classList.add('hidden');
+                    })
+                    .catch((error) => {
+                        console.error("Giriş hatası:", error);
+                        alert("Giriş yapılırken bir hata oluştu. Lütfen tekrar dene.");
+                    });
+            });
+        }
     });
-}
+</script>
     </script>
 </body>
 </html>
