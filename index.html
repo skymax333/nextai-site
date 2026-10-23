@@ -525,7 +525,7 @@ setTimeout(() => {
 onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById('loginBtn');
     if (user) {
-        loginBtn.textContent = "Çıkış Yap";
+        loginBtn.textContent = user.displayName + " (Çıkış Yap)";
         loginBtn.classList.replace('bg-blue-600', 'bg-red-600');
         loginBtn.classList.replace('hover:bg-blue-700', 'hover:bg-red-700');
         
