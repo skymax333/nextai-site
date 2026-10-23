@@ -415,6 +415,33 @@ if(themeToggle) {
         }
     });
 }
+        // --- GİRİŞ EKRANI İŞLEMLERİ ---
+const loginBtn = document.getElementById('loginBtn');
+const loginModal = document.getElementById('loginModal');
+const closeLoginBtn = document.getElementById('closeLoginBtn');
+const guestBtn = document.getElementById('guestBtn');
+
+if (loginBtn && loginModal) {
+    loginBtn.addEventListener('click', () => {
+        loginModal.classList.remove('hidden');
+    });
+
+    closeLoginBtn.addEventListener('click', () => {
+        loginModal.classList.add('hidden');
+    });
+
+    guestBtn.addEventListener('click', () => {
+        loginModal.classList.add('hidden');
+    });
+
+    // Google ve Facebook butonlarına tıklandığında uyarı ver
+    const authButtons = loginModal.querySelectorAll('button:not(#closeLoginBtn):not(#guestBtn)');
+    authButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            alert("Çok yakında! Gerçek giriş sistemi (Backend) eklendiğinde bu butonlar aktif olacak.");
+        });
+    });
+}
     </script>
 </body>
 </html>
