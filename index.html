@@ -465,17 +465,32 @@ if (loginBtn && loginModal) {
     });
 
     // Misafir olarak devam et butonu
-    guestBtn.addEventListener('click', () => {
-        loginModal.classList.add('hidden');
-    });
+ guestBtn.addEventListener('click', () => {
+    signInAnonymously(auth)
+        .then(() => {
+            const toast = document.getElementById('toastBildirim');
+            const toastMesaj = document.getElementById('toastMesaj');
+            toastMesaj.textContent = "Misafir olarak giriş yapıldı!";
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+
+            loginModal.classList.add('hidden');
+        })
+        .catch((error) => {
+            alert("Misafir girişi başarısız: " + error.message);
+        });
+});
 }
 </script>
     
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         const firebaseConfig = {
             apiKey: "AIzaSyBrIjai_cSm8K3Et59IoIiv8AbPfraiVTg",
             authDomain: "auth.nextai.com.tr",
@@ -522,7 +537,11 @@ setTimeout(() => {
 onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById('loginBtn');
     if (user) {
-        loginBtn.textContent = user.displayName + " (Çıkış Yap)";
+        if (user.isAnonymous) {
+    loginBtn.textContent = "Misafir (Çıkış Yap)";
+} else {
+    loginBtn.textContent = user.displayName + " (Çıkış Yap)";
+}
         loginBtn.classList.replace('bg-blue-600', 'bg-red-600');
         loginBtn.classList.replace('hover:bg-blue-700', 'hover:bg-red-700');
         
