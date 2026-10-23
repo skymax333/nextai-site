@@ -478,7 +478,7 @@ if (loginBtn && loginModal) {
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         const firebaseConfig = {
             apiKey: "AIzaSyBrIjai_cSm8K3Et59IoIiv8AbPfraiVTg",
             authDomain: "auth.nextai.com.tr",
@@ -502,7 +502,14 @@ if (loginBtn && loginModal) {
                     signInWithPopup(auth, provider)
                         .then((result) => {
                             const user = result.user;
-                            alert("Hoş geldin, " + user.displayName + "! Başarıyla giriş yaptın.");
+                            const toast = document.getElementById('toastBildirim');
+const toastMesaj = document.getElementById('toastMesaj');
+toastMesaj.textContent = "Hoş geldin, " + user.displayName + "!";
+
+toast.classList.remove('translate-y-20', 'opacity-0');
+setTimeout(() => {
+    toast.classList.add('translate-y-20', 'opacity-0');
+}, 3000);
                             document.getElementById('loginModal').classList.add('hidden');
                         })
                         .catch((error) => {
@@ -512,6 +519,28 @@ if (loginBtn && loginModal) {
                 });
             }
         });
+    // Çıkış Yapma ve Buton Değiştirme
+
+
+onAuthStateChanged(auth, (user) => {
+    const loginBtn = document.getElementById('loginBtn');
+    if (user) {
+        loginBtn.textContent = "Çıkış Yap";
+        loginBtn.classList.replace('bg-blue-600', 'bg-red-600');
+        loginBtn.classList.replace('hover:bg-blue-700', 'hover:bg-red-700');
+        
+        loginBtn.onclick = () => {
+            signOut(auth).then(() => {
+                window.location.reload();
+            });
+        };
+    }
+});
     </script>
+        <!-- Toast Bildirim Kutusu -->
+<div id="toastBildirim" class="fixed bottom-5 right-5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-[100] flex items-center gap-3">
+    <span class="text-xl">✅</span>
+    <span id="toastMesaj" class="font-medium"></span>
+</div>
 </body>
 </html>
