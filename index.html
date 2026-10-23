@@ -121,7 +121,7 @@
             gecmisListesi.innerHTML = '';
             tumSohbetler.slice().reverse().forEach(sohbet => {
                 const btn = document.createElement('button');
-                btn.className = "w-full text-left p-3 mb-2 rounded-lg hover:bg-gray-100 transition text-sm text-gray-700 truncate border border-transparent hover:border-gray-200";
+                btn.className = "w-full text-left p-3 mb-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm text-gray-700 dark:text-gray-200 truncate border border-transparent hover:border-gray-200 dark:hover:border-gray-600";
                 btn.textContent = sohbet.baslik;
                 btn.onclick = () => {
                     aktifSohbetId = sohbet.id;
