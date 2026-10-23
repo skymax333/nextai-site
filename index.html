@@ -197,7 +197,9 @@ if (kayitliSohbet) {
         async function mesajGonder() {
             const metin = userInput.value.trim();
             if (!metin) return;
-
+// Mesaj yazıldığında hazır soruları gizle
+const hizliButonlarAlani = document.getElementById('hizli-butonlar');
+if (hizliButonlarAlani) hizliButonlarAlani.style.display = 'none';
             if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // AI konuşuyorsa sustur
 
             // Kullanıcı mesajını ekrana bas
@@ -209,7 +211,7 @@ if (kayitliSohbet) {
             chatContainer.scrollTop = chatContainer.scrollHeight;
             
             chatHistory.push({"role": "user", "content": metin});
-            localStorage.setItem('nextai_sohbet', JSON.stringify(chatHistory));
+           sohbetiKaydet();
             // "Yazıyor..." animasyonu (Burada da 'N' yerine ikon kullanıldı)
             const loadingDiv = document.createElement('div');
             loadingDiv.className = "flex gap-4 mt-4 animate-pulse";
@@ -275,7 +277,7 @@ if (kayitliSohbet) {
                 
                 chatHistory.push({"role": "assistant", "content": aiCevabi});
                 metniSesliOku(aiCevabi); // Cevap bittiğinde sesli oku
-                localStorage.setItem('nextai_sohbet', JSON.stringify(chatHistory));
+               sohbetiKaydet();
             } catch (error) {
                 const loadingMsg = document.getElementById('loading-message');
                 if (loadingMsg) chatContainer.removeChild(loadingMsg);
@@ -327,6 +329,89 @@ if (menuBtn && gecmisPanel && closeMenuBtn) {
         gecmisPanel.style.left = '-300px'; // Paneli dışarı kaydır
     });
 } 
+        // --- ÇOKLU SOHBET GEÇMİŞİ SİSTEMİ ---
+let tumSohbetler = JSON.parse(localStorage.getItem('nextai_tum_sohbetler')) || [];
+let aktifSohbetId = localStorage.getItem('nextai_aktif_sohbet') || Date.now().toString();
+
+// Geçmiş listesini güncelle
+function gecmisListesiniGuncelle() {
+    const gecmisListesi = document.getElementById('gecmisListesi');
+    if (!gecmisListesi) return;
+    
+    if (tumSohbetler.length === 0) {
+        gecmisListesi.innerHTML = '<p class="text-sm text-gray-400 text-center mt-10">Henüz geçmiş sohbet yok.</p>';
+        return;
+    }
+    
+    gecmisListesi.innerHTML = '';
+    tumSohbetler.slice().reverse().forEach(sohbet => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-3 mb-2 rounded-lg hover:bg-gray-100 transition text-sm text-gray-700 truncate border border-transparent hover:border-gray-200";
+        btn.textContent = sohbet.baslik;
+        btn.onclick = () => {
+            aktifSohbetId = sohbet.id;
+            localStorage.setItem('nextai_aktif_sohbet', aktifSohbetId);
+            location.reload();
+        };
+        gecmisListesi.appendChild(btn);
+    });
+}
+
+// Menü butonuna tıklanınca listeyi güncelle
+const menuTiklama = document.getElementById('menuBtn');
+if(menuTiklama) {
+    menuTiklama.addEventListener('click', gecmisListesiniGuncelle);
+}
+
+// Sohbeti kaydetme fonksiyonu
+function sohbetiKaydet() {
+    const mevcutSohbetIndex = tumSohbetler.findIndex(s => s.id === aktifSohbetId);
+    let baslik = "Yeni Sohbet";
+    const ilkKullaniciMesaji = chatHistory.find(m => m.role === 'user');
+    if (ilkKullaniciMesaji) {
+        baslik = ilkKullaniciMesaji.content.substring(0, 25) + (ilkKullaniciMesaji.content.length > 25 ? "..." : "");
+    }
+    const sohbetObjesi = { id: aktifSohbetId, baslik: baslik, mesajlar: chatHistory };
+    if (mevcutSohbetIndex > -1) {
+        tumSohbetler[mevcutSohbetIndex] = sohbetObjesi;
+    } else {
+        tumSohbetler.push(sohbetObjesi);
+    }
+    localStorage.setItem('nextai_tum_sohbetler', JSON.stringify(tumSohbetler));
+}
+
+// Yeni Sohbet Butonu
+const yeniSohbetTiklama = document.getElementById('yeniSohbetBtn');
+if(yeniSohbetTiklama) {
+    yeniSohbetTiklama.addEventListener('click', () => {
+        aktifSohbetId = Date.now().toString();
+        localStorage.setItem('nextai_aktif_sohbet', aktifSohbetId);
+        location.reload();
+    });
+}
+
+// Sayfa açıldığında eski sohbeti yükle
+window.addEventListener('DOMContentLoaded', () => {
+    const aktifSohbet = tumSohbetler.find(s => s.id === aktifSohbetId);
+    if (aktifSohbet && aktifSohbet.mesajlar.length > 1) {
+        // Karşılama mesajını atla, diğerlerini yükle
+        for (let i = 1; i < aktifSohbet.mesajlar.length; i++) {
+            const msg = aktifSohbet.mesajlar[i];
+            const msgDiv = document.createElement('div');
+            msgDiv.className = msg.role === 'user' ? 'flex gap-4 justify-end mt-4' : 'flex gap-4 mt-4';
+            
+            if (msg.role === 'user') {
+                msgDiv.innerHTML = <div class="bg-blue-600 text-white text-sm p-3 rounded-xl rounded-tr-none max-w-[80%] shadow-sm">${msg.content}</div>;
+            } else {
+                msgDiv.innerHTML = <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center shadow-sm bg-white border border-gray-100"><img src="icon.png" class="w-full h-full object-contain rounded-full"></div><div class="ai-message-content bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none max-w-[80%] text-gray-800 shadow-sm">${marked.parse(msg.content)}</div>;
+            }
+            chatContainer.appendChild(msgDiv);
+        }
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        chatHistory = aktifSohbet.mesajlar;
+    }
+});
+// --- SİSTEM BİTTİ ---
     </script>
 </body>
 </html>
