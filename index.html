@@ -294,7 +294,6 @@ if (kayitliSohbet) {
         // Hazır Soru Butonları
 const hizliSorular = [
     "Bana kısa bir bilim kurgu hikayesi yaz.",
-    "Python'da döngüler nasıl çalışır?",
     "Günün motive edici sözü nedir?",
     "Yapay zeka gelecekte hayatımızı nasıl değiştirecek?"
 ];
@@ -314,6 +313,20 @@ if (butonKonteyner) {
         butonKonteyner.appendChild(btn);
     });
 }
+       // Menü Açma / Kapama İşlemleri
+const menuBtn = document.getElementById('menuBtn');
+const gecmisPanel = document.getElementById('gecmisPanel');
+const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+if (menuBtn && gecmisPanel && closeMenuBtn) {
+    menuBtn.addEventListener('click', () => {
+        gecmisPanel.style.left = '0'; // Paneli içeri kaydır
+    });
+
+    closeMenuBtn.addEventListener('click', () => {
+        gecmisPanel.style.left = '-300px'; // Paneli dışarı kaydır
+    });
+} 
     </script>
 </body>
 </html>
