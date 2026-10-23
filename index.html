@@ -424,19 +424,21 @@ const closeLoginBtn = document.getElementById('closeLoginBtn');
 const guestBtn = document.getElementById('guestBtn');
 
 if (loginBtn && loginModal) {
+    // Giriş Yap butonu (Paneli açar)
     loginBtn.addEventListener('click', () => {
         loginModal.classList.remove('hidden');
     });
 
+    // Kapatma butonu (X)
     closeLoginBtn.addEventListener('click', () => {
         loginModal.classList.add('hidden');
     });
 
+    // Misafir olarak devam et butonu
     guestBtn.addEventListener('click', () => {
         loginModal.classList.add('hidden');
     });
-    }
-});
+}
 </script>
     
   <script type="module">
