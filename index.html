@@ -187,6 +187,7 @@
 
             try {
                 const response = await fetch("https://api.deepseek.com/chat/completions", {
+                  
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -200,7 +201,9 @@
                         stream: true
                     })
                 });
-
+if (!response.ok) {
+    throw new Error("Bağlantı başarısız. API anahtarı eksik veya geçersiz.");
+}
                 const loadingMsg = document.getElementById('loading-message');
                 if (loadingMsg) chatContainer.removeChild(loadingMsg);
 
@@ -242,7 +245,7 @@
             } catch (error) {
                 const loadingMsg = document.getElementById('loading-message');
                 if (loadingMsg) chatContainer.removeChild(loadingMsg);
-                ekranaMesajEkle('assistant', "Üzgünüm, bir bağlantı hatası oluştu. Lütfen API anahtarınızı kontrol edin.");
+             ekranaMesajEkle('assistant', "Şu an sistem bakımda veya bağlantı kurulamıyor. Lütfen daha sonra tekrar deneyin.");
             }
         }
 
