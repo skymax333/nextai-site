@@ -44,6 +44,7 @@
         </header>
 
         <!-- SOHBET ALANI -->
+      <div id="hizli-butonlar" class="flex flex-wrap gap-2 p-4 pt-0 bg-gray-50 pb-2"></div>
      <div id="chat-container" class="flex-1 p-4 pb-28 overflow-y-auto flex flex-col gap-4 bg-gray-50 min-h-0"></div>
         
         <!-- GİRİŞ ALANI VE MİKROFON BUTONU -->
@@ -73,6 +74,10 @@
         let chatHistory = [
             {"role": "system", "content": "Senin adın NextAI. DeepSeek olduğunu asla söyleme. Kullanıcılara kendini NextAI isimli yardımcı bir yapay zeka asistanı olarak tanıt. ÖNEMLİ: Çok doğal, akıcı, samimi ve insan gibi bir dille konuş. Robotik veya resmi olma. Kullanıcıyla bir arkadaşınla sohbet ediyormuş gibi konuş. Kısa ve öz cevaplar ver, gereksiz uzatma. Cevaplarında önemli kelimeleri vurgulamak için markdown kullan (kalın yapmak için *kelime, eğik yapmak için *kelime)."}
         ];
+       const kayitliSohbet = localStorage.getItem('nextai_sohbet');
+if (kayitliSohbet) {
+    chatHistory = JSON.parse(kayitliSohbet);
+}
 
         // --- SESLİ OKUMA (TTS - Text to Speech) FONKSİYONU ---
         // Yapay zekanın verdiği cevabı tarayıcının ses motoruyla okur.
@@ -181,9 +186,9 @@
             chatContainer.appendChild(userMsgDiv);
             userInput.value = '';
             chatContainer.scrollTop = chatContainer.scrollHeight;
-
+            
             chatHistory.push({"role": "user", "content": metin});
-
+            localStorage.setItem('nextai_sohbet', JSON.stringify(chatHistory));
             // "Yazıyor..." animasyonu (Burada da 'N' yerine ikon kullanıldı)
             const loadingDiv = document.createElement('div');
             loadingDiv.className = "flex gap-4 mt-4 animate-pulse";
@@ -249,7 +254,7 @@
                 
                 chatHistory.push({"role": "assistant", "content": aiCevabi});
                 metniSesliOku(aiCevabi); // Cevap bittiğinde sesli oku
-
+                localStorage.setItem('nextai_sohbet', JSON.stringify(chatHistory));
             } catch (error) {
                 const loadingMsg = document.getElementById('loading-message');
                 if (loadingMsg) chatContainer.removeChild(loadingMsg);
@@ -265,6 +270,29 @@
         userInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') mesajGonder();
         });
+        // Hazır Soru Butonları
+const hizliSorular = [
+    "Bana kısa bir bilim kurgu hikayesi yaz.",
+    "Python'da döngüler nasıl çalışır?",
+    "Günün motive edici sözü nedir?",
+    "Yapay zeka gelecekte hayatımızı nasıl değiştirecek?"
+];
+
+const butonKonteyner = document.getElementById('hizli-butonlar');
+
+if (butonKonteyner) {
+    hizliSorular.forEach(soru => {
+        const btn = document.createElement('button');
+        btn.className = "bg-white border border-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded-full hover:bg-gray-100 transition shadow-sm";
+        btn.textContent = soru;
+        btn.onclick = () => {
+            userInput.value = soru;
+            mesajGonder();
+            butonKonteyner.style.display = 'none'; 
+        };
+        butonKonteyner.appendChild(btn);
+    });
+}
     </script>
 </body>
 </html>
