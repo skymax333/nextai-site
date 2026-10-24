@@ -650,8 +650,11 @@ if (uploadBtn && imageInput) {
     <span id="toastMesaj" class="font-medium"></span>
 </div>
 </body>
-  <script type="module">
+ <script type="module">
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+    // Firebase fonksiyonlarını tarayıcının ana hafızasına (window) kaydediyoruz
+    window.firebaseStorage = { getStorage, ref, uploadBytes, getDownloadURL };
 
     // --- RESİM YÜKLEME BEYNİ ---
     const imageInput = document.getElementById('image-input');
@@ -669,11 +672,11 @@ if (uploadBtn && imageInput) {
             try {
                 alert("Resim yükleniyor, lütfen bekleyin...");
                 
-                const storage = getStorage();
-                const storageRef = ref(storage, 'resimler/' + Date.now() + '_' + file.name);
+                const storage = window.firebaseStorage.getStorage();
+                const storageRef = window.firebaseStorage.ref(storage, 'resimler/' + Date.now() + '_' + file.name);
                 
-                await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(storageRef);
+                await window.firebaseStorage.uploadBytes(storageRef, file);
+                const downloadURL = await window.firebaseStorage.getDownloadURL(storageRef);
                 
                 console.log('Resim başarıyla yüklendi:', downloadURL);
                 alert('Resim başarıyla yüklendi!');
@@ -684,6 +687,5 @@ if (uploadBtn && imageInput) {
             }
         });
     }
-</script>  
-
+</script>
 </html>
