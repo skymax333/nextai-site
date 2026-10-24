@@ -124,22 +124,29 @@
 </div>
         <div id="chat-container" class="flex-1 p-4 pb-24 overflow-y-auto flex flex-col gap-4 bg-gray-50 dark:bg-gray-900 min-h-0 transition-colors duration-300"></div>
 
-    <div class="fixed bottom-0 left-0 right-0 mx-auto max-w-2xl p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex gap-2 items-center z-40 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-colors duration-300">
-        <button id="upload-btn" class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 p-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center" onclick="document.getElementById('image-input').click()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-</button>
-<input type="file" id="image-input" accept="image/*" style="display: none;" />
-        
-            <button id="mic-btn" class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 p-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition" title="Sesle yaz">
-                🎤
-            </button>
-            <input type="text" id="user-input" class="flex-1 border dark:border-gray-600 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:bg-gray-700 dark:text-white transition-colors duration-300" placeholder="Bir mesaj yazın...">
-            <button id="send-btn" class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition shadow-md">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                </svg>
-            </button>
-        </div>
+   <div class="fixed bottom-0 left-0 right-0 mx-auto max-w-2xl p-2 sm:p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex gap-1 sm:gap-2 items-center">
+    
+    <!-- Resim Yükleme Butonu -->
+    <button id="upload-btn" class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 p-2 sm:p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 flex shrink-0 items-center justify-center" onclick="document.getElementById('image-input').click()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+    </button>
+    <input type="file" id="image-input" accept="image/*" style="display: none;" />
+
+    <!-- Mikrofon Butonu -->
+    <button id="mic-btn" class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 p-2 sm:p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 flex shrink-0 items-center justify-center">
+        🎤
+    </button>
+
+    <!-- Yazı Yazma Alanı -->
+    <input type="text" id="user-input" class="flex-1 min-w-0 border dark:border-gray-600 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="Bir mesaj yazın...">
+
+    <!-- Gönder Butonu -->
+    <button id="send-btn" class="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+        </svg>
+    </button>
+</div>
 
     </div>
 
