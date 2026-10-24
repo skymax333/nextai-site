@@ -610,6 +610,41 @@ onAuthStateChanged(auth, (user) => {
         };
     }
 });
+    // --- RESİM YÜKLEME BEYNİ ---
+const imageInput = document.getElementById('image-input');
+const uploadBtn = document.getElementById('upload-btn');
+
+if (uploadBtn && imageInput) {
+    // Butona tıklayınca gizli dosya seçiciyi aç
+    uploadBtn.addEventListener('click', () => {
+        imageInput.click();
+    });
+
+    // Dosya seçilince resmi Firebase'e yükle
+    imageInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            alert("Resim yükleniyor, lütfen bekleyin...");
+            
+            // Firebase Storage'a referans oluştur ve yükle
+            const storage = firebase.storage(); 
+            const storageRef = storage.ref('resimler/' + Date.now() + '_' + file.name);
+            
+            await storageRef.put(file);
+            const downloadURL = await storageRef.getDownloadURL();
+            
+            console.log('Resim başarıyla yüklendi:', downloadURL);
+            alert('Resim başarıyla yüklendi!');
+            
+        } catch (error) {
+            console.error('Yükleme hatası:', error);
+            alert('Resim yüklenemedi: ' + error.message);
+        }
+    });
+}
+// ---------------------------
     </script>
 
         <!-- Toast Bildirim Kutusu -->
