@@ -4,31 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NextAI Sohbet</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
+        .ai-message-content p { margin-bottom: 0.5rem; }
+        .ai-message-content strong { font-weight: 900; color: #000000; }
+        .ai-message-content em { font-style: italic; color: #1f2937; }
+        .ai-message-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
+        .ai-message-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 0.5rem; }
+        .ai-message-content code { background-color: #e5e7eb; padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-family: monospace; }
         .mic-active { animation: pulse-red 1.5s infinite; background-color: #ef4444 !important; color: white !important; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { box-shadow: 0 0 10px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans h-screen flex justify-center overflow-hidden">
 
     <div class="w-full max-w-2xl bg-white shadow-xl flex flex-col flex-1 h-full relative">
         
-        <!-- SOL MENÜ -->
+        <!-- SOL MENÜ (Sohbet Geçmişi) -->
         <div id="gecmisPanel" class="fixed top-0 left-[-300px] w-[300px] h-full bg-white shadow-2xl z-50 transition-all duration-300 flex flex-col">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50">
                 <h2 class="font-bold text-gray-800">Sohbet Geçmişi</h2>
-                <button onclick="document.getElementById('gecmisPanel').style.left='-300px'" class="text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+                <button id="closeMenuBtn" class="text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
             </div>
-            <div class="p-4 flex-1 overflow-y-auto">
-                <button onclick="window.location.reload()" class="w-full bg-blue-50 text-blue-600 border border-blue-200 rounded-lg py-2 mb-4 font-semibold">+ Yeni Sohbet</button>
+            <div class="p-4 flex-1 overflow-y-auto flex flex-col" id="gecmisListesi">
+                <button id="yeniSohbetBtn" class="w-full bg-blue-50 text-blue-600 border border-blue-200 rounded-lg py-2 mb-2 font-semibold hover:bg-blue-100 transition-colors">+ Yeni Sohbet</button>
+                <button id="gecmisiSilBtn" class="w-full bg-red-50 text-red-600 border border-red-200 rounded-lg py-2 mb-4 font-semibold hover:bg-red-100 transition-colors text-sm">Tüm Geçmişi Sil</button>
+                <div id="gecmisLinkleri" class="flex-1 overflow-y-auto"></div>
             </div>
         </div>
 
         <!-- ÜST MENÜ -->
         <header class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center shadow-sm relative z-10 shrink-0">
-            <button onclick="document.getElementById('gecmisPanel').style.left='0'" class="p-2 bg-gray-100 rounded-lg text-gray-600 z-20">
+            <button id="menuBtn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600 z-20">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
             
@@ -39,8 +52,7 @@
                 <h1 class="text-sm font-black tracking-widest text-gray-900">NEXT<span class="text-blue-500">AI</span></h1>
             </div>
 
-            <!-- TIKLAMA OLAYLARI DOĞRUDAN BURADA -->
-            <button id="loginBtn" onclick="window.handleLogin()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm truncate max-w-[130px] z-20">
+            <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors truncate max-w-[130px] z-20">
                 Giriş Yap
             </button>
         </header>
@@ -48,14 +60,14 @@
         <!-- SOHBET ALANI -->
         <main id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-gray-50">
             <div class="flex flex-wrap gap-2 justify-center mb-4" id="suggestions">
-                <button onclick="window.sendSuggestion('Bana kısa bir bilim kurgu hikayesi yaz.')" class="bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full shadow-sm">Bana kısa bir bilim kurgu hikayesi yaz.</button>
-                <button onclick="window.sendSuggestion('Günün motive edici sözü nedir?')" class="bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full shadow-sm">Günün motive edici sözü nedir?</button>
+                <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50 shadow-sm">Bana kısa bir bilim kurgu hikayesi yaz.</button>
+                <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50 shadow-sm">Günün motive edici sözü nedir?</button>
             </div>
             <div class="flex items-start gap-3">
                 <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 shrink-0">
                     <span class="text-blue-500 font-bold text-xs">N</span>
                 </div>
-                <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[85%] text-sm leading-relaxed">
+                <div class="ai-message-content bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[85%] text-sm leading-relaxed">
                     <p>Geleceğe hoş geldiniz. Ben <strong>NextAI</strong>. Evreni keşfetmeye hazır mısınız? 🚀</p>
                 </div>
             </div>
@@ -63,18 +75,18 @@
 
         <!-- ALT GİRİŞ ALANI -->
         <footer class="bg-white border-t border-gray-200 p-3 sm:p-4 flex gap-2 items-center shrink-0">
-            <button onclick="document.getElementById('image-input').click()" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200">
+            <button id="upload-btn" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
             </button>
-            <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="window.handleImageUpload(event)" />
+            <input type="file" id="image-input" accept="image/*" style="display: none;" />
             
-            <button id="mic-btn" onclick="window.toggleMic()" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200">
+            <button id="mic-btn" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
             </button>
 
-            <input type="text" id="user-input" placeholder="Bir mesaj yazın..." onkeypress="if(event.key === 'Enter') window.sendMessage()" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            <input type="text" id="user-input" placeholder="Bir mesaj yazın..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
             
-            <button onclick="window.sendMessage()" class="bg-blue-600 text-white p-2.5 rounded-xl shadow-sm hover:bg-blue-700">
+            <button id="send-btn" class="bg-blue-600 text-white p-2.5 rounded-xl shadow-sm hover:bg-blue-700">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </button>
         </footer>
@@ -85,7 +97,7 @@
         <span id="toastMesaj" class="font-medium text-sm"></span>
     </div>
 
-    <!-- BEYİN KISMI -->
+    <!-- FIREBASE VE JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -111,13 +123,50 @@
             setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
         }
 
-        // --- 1. GİRİŞ YAPMA FONKSİYONU ---
-        window.handleLogin = function() {
+        // --- MENÜ VE GEÇMİŞ İŞLEMLERİ ---
+        let sohbetGecmisi = JSON.parse(localStorage.getItem('nextai_gecmis')) || [];
+        const gecmisPanel = document.getElementById('gecmisPanel');
+
+        document.getElementById('menuBtn').onclick = () => gecmisPanel.style.left = '0';
+        document.getElementById('closeMenuBtn').onclick = () => gecmisPanel.style.left = '-300px';
+        document.getElementById('yeniSohbetBtn').onclick = () => window.location.reload();
+        
+        document.getElementById('gecmisiSilBtn').onclick = () => {
+            if(confirm("Tüm sohbet geçmişi silinecek. Emin misiniz?")) {
+                localStorage.removeItem('nextai_gecmis');
+                sohbetGecmisi = [];
+                gecmisListesiniGuncelle();
+                window.location.reload();
+            }
+        };
+
+        function gecmisListesiniGuncelle() {
+            const liste = document.getElementById('gecmisLinkleri');
+            liste.innerHTML = '';
+            if (sohbetGecmisi.length === 0) {
+                liste.innerHTML = '<div class="text-sm text-gray-500 text-center mt-4">Henüz geçmiş sohbet yok.</div>';
+                return;
+            }
+            sohbetGecmisi.forEach((sohbet, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-2 mb-1 text-sm text-gray-700 hover:bg-gray-100 rounded-lg truncate";
+                btn.textContent = sohbet.baslik;
+                btn.onclick = () => {
+                    document.getElementById('chat-container').innerHTML = sohbet.mesajlar;
+                    gecmisPanel.style.left = '-300px';
+                };
+                liste.appendChild(btn);
+            });
+        }
+        gecmisListesiniGuncelle();
+
+        // --- GİRİŞ / ÇIKIŞ ---
+        document.getElementById('loginBtn').onclick = () => {
             if (auth.currentUser) {
                 signOut(auth).then(() => window.location.reload());
             } else {
                 const provider = new GoogleAuthProvider();
-                signInWithPopup(auth, provider).catch(err => window.showToast("Hata: " + err.message));
+                signInWithPopup(auth, provider).catch(err => window.showToast("Giriş hatası: " + err.message));
             }
         };
 
@@ -132,47 +181,15 @@
             }
         });
 
-        // --- 2. MESAJ GÖNDERME FONKSİYONU ---
-        window.sendMessage = function() {
-            const input = document.getElementById('user-input');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const chatContainer = document.getElementById('chat-container');
-            const userHTML = `
-                <div class="flex items-start gap-3 flex-row-reverse">
-                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shadow-sm shrink-0"><span class="text-blue-600 font-bold text-xs">S</span></div>
-                    <div class="bg-blue-600 text-white p-4 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-sm">${text}</div>
-                </div>`;
-            chatContainer.insertAdjacentHTML('beforeend', userHTML);
-            input.value = '';
-            document.getElementById('suggestions').style.display = 'none';
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            // Yapay zeka cevabı (Şimdilik test)
-            setTimeout(() => {
-                const aiHTML = `
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 shrink-0"><span class="text-blue-500 font-bold text-xs">N</span></div>
-                        <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[85%] text-sm">Mesajınız alındı: "${text}". (API bağlantısı yakında)</div>
-                    </div>`;
-                chatContainer.insertAdjacentHTML('beforeend', aiHTML);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 800);
-        };
-
-        window.sendSuggestion = function(text) {
-            document.getElementById('user-input').value = text;
-            window.sendMessage();
-        };
-
-        // --- 3. RESİM YÜKLEME FONKSİYONU ---
-        window.handleImageUpload = async function(event) {
-            const file = event.target.files[0];
+        // --- RESİM YÜKLEME ---
+        const imageInput = document.getElementById('image-input');
+        document.getElementById('upload-btn').onclick = () => imageInput.click();
+        
+        imageInput.onchange = async (e) => {
+            const file = e.target.files[0];
             if (!file) return;
-
             try {
-                window.showToast("Resim yükleniyor, lütfen bekleyin...");
+                window.showToast("Resim yükleniyor...");
                 const storageRef = ref(storage, 'resimler/' + Date.now() + '_' + file.name);
                 await uploadBytes(storageRef, file);
                 const downloadURL = await getDownloadURL(storageRef);
@@ -185,13 +202,13 @@
                     </div>`;
                 chatContainer.insertAdjacentHTML('beforeend', imgHTML);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
-                window.showToast('Resim başarıyla yüklendi!');
+                window.showToast('Resim yüklendi!');
             } catch (error) {
                 window.showToast('Hata: ' + error.message);
             }
         };
 
-        // --- 4. MİKROFON FONKSİYONU ---
+        // --- MİKROFON ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         if (SpeechRecognition) {
@@ -200,23 +217,70 @@
             recognition.onresult = (event) => {
                 document.getElementById('user-input').value += event.results[0][0].transcript + " ";
             };
-            recognition.onend = () => {
-                document.getElementById('mic-btn').classList.remove('mic-active');
-            };
+            recognition.onend = () => document.getElementById('mic-btn').classList.remove('mic-active');
         }
 
-        window.toggleMic = function() {
+        document.getElementById('mic-btn').onclick = () => {
             const btn = document.getElementById('mic-btn');
-            if (!recognition) return window.showToast("Tarayıcı mikrofonu desteklemiyor.");
-            
-            if (btn.classList.contains('mic-active')) {
-                recognition.stop();
-            } else {
+            if (!recognition) return window.showToast("Mikrofon desteklenmiyor.");
+            if (btn.classList.contains('mic-active')) recognition.stop();
+            else {
                 btn.classList.add('mic-active');
                 recognition.start();
                 window.showToast("Dinleniyor...");
             }
         };
+
+        // --- SOHBET ETME ---
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+
+        function mesajGonder() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            const userHTML = `
+                <div class="flex items-start gap-3 flex-row-reverse">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shadow-sm shrink-0"><span class="text-blue-600 font-bold text-xs">S</span></div>
+                    <div class="bg-blue-600 text-white p-4 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-sm">${text}</div>
+                </div>`;
+            chatContainer.insertAdjacentHTML('beforeend', userHTML);
+            userInput.value = '';
+            document.getElementById('suggestions').style.display = 'none';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Geçmişe Kaydet
+            if(sohbetGecmisi.length === 0) {
+                sohbetGecmisi.push({ baslik: text.substring(0, 20) + "...", mesajlar: chatContainer.innerHTML });
+            } else {
+                sohbetGecmisi[sohbetGecmisi.length - 1].mesajlar = chatContainer.innerHTML;
+            }
+            localStorage.setItem('nextai_gecmis', JSON.stringify(sohbetGecmisi));
+            gecmisListesiniGuncelle();
+
+            // Yapay Zeka Cevabı
+            setTimeout(() => {
+                const aiHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 shrink-0"><span class="text-blue-500 font-bold text-xs">N</span></div>
+                        <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[85%] text-sm">Mesajınız alındı: "${text}". (API bağlantısı yakında)</div>
+                    </div>`;
+                chatContainer.insertAdjacentHTML('beforeend', aiHTML);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                sohbetGecmisi[sohbetGecmisi.length - 1].mesajlar = chatContainer.innerHTML;
+                localStorage.setItem('nextai_gecmis', JSON.stringify(sohbetGecmisi));
+            }, 800);
+        }
+
+        document.getElementById('send-btn').onclick = mesajGonder;
+        userInput.onkeypress = (e) => { if (e.key === 'Enter') mesajGonder(); };
+
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                userInput.value = e.target.textContent;
+                mesajGonder();
+            };
+        });
     </script>
 </body>
 </html>
