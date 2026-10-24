@@ -651,9 +651,28 @@ if (uploadBtn && imageInput) {
 </div>
 </body>
 <script type="module">
+    // Gerekli tüm Firebase modüllerini içe aktar
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-    // --- RESİM YÜKLEME BEYNİ (Tertemiz Sürüm) ---
+    // --- ÖNEMLİ: BURAYA KENDİ FIREBASE BİLGİLERİNİ GİR ---
+    // (Sayfanın en üstündeki firebaseConfig kodunu buraya kopyalayabilirsin)
+   const firebaseConfig = {
+    apiKey: "BURAYA_KENDI_API_KEY_GELECEK",
+    authDomain: "BURAYA_KENDI_AUTH_DOMAIN_GELECEK",
+    projectId: "BURAYA_KENDI_PROJECT_ID_GELECEK",
+    storageBucket: "BURAYA_KENDI_STORAGE_BUCKET_GELECEK",
+    messagingSenderId: "BURAYA_KENDI_MESSAGING_SENDER_ID_GELECEK",
+    appId: "BURAYA_KENDI_APP_ID_GELECEK"
+};
+
+    // Uygulama zaten başlatıldıysa onu kullan, başlatılmadıysa hata vermeden başlat
+    const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
+    
+    // Storage servisini başlat
+    const storage = getStorage(app);
+
+    // --- RESİM YÜKLEME BEYNİ ---
     const imageInput = document.getElementById('image-input');
     const uploadBtn = document.getElementById('upload-btn');
 
@@ -669,22 +688,25 @@ if (uploadBtn && imageInput) {
             try {
                 alert("Resim yükleniyor, lütfen bekleyin...");
                 
-                // Doğrudan Firebase'in kendi fonksiyonlarını çağırıyoruz (window yok)
-                const storage = getStorage(); 
+                // Benzersiz bir dosya adı oluştur
                 const storageRef = ref(storage, 'resimler/' + Date.now() + '_' + file.name);
                 
+                // Yükle
                 await uploadBytes(storageRef, file);
+                
+                // Yüklenen resmin linkini al
                 const downloadURL = await getDownloadURL(storageRef);
                 
                 console.log('Resim başarıyla yüklendi:', downloadURL);
-                alert('Resim başarıyla yüklendi!');
+                alert('Resim başarıyla yüklendi!\n\nLink: ' + downloadURL);
                 
             } catch (error) {
                 console.error('Yükleme hatası:', error);
-                alert('Resim yüklenemedi: ' + error.message);
+                alert('Resim yüklenemedi. Hata: ' + error.message);
             }
         });
     }
 </script>
+
 
 </html>
