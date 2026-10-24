@@ -25,72 +25,76 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex justify-center overflow-hidden">
 
-    <!-- SOL MENÜ (Sohbet Geçmişi) -->
-    <div id="gecmisPanel" class="fixed top-0 left-[-300px] w-[300px] h-full bg-white shadow-2xl z-50 transition-all duration-300 flex flex-col">
-        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
-            <h2 class="font-bold text-gray-800">Sohbet Geçmişi</h2>
-            <button id="closeMenuBtn" class="text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+    <!-- SİTENİN TAMAMINI ORTALAYAN KAPSAYICI (Bunu silmiştim, geri ekledim) -->
+    <div class="w-full max-w-2xl bg-white shadow-xl flex flex-col flex-1 h-full relative">
+
+        <!-- SOL MENÜ (Sohbet Geçmişi) -->
+        <div id="gecmisPanel" class="fixed top-0 left-[-300px] w-[300px] h-full bg-white shadow-2xl z-50 transition-all duration-300 flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                <h2 class="font-bold text-gray-800">Sohbet Geçmişi</h2>
+                <button id="closeMenuBtn" class="text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="p-4 flex-1 overflow-y-auto" id="gecmisListesi">
+                <button id="yeniSohbetBtn" class="w-full bg-blue-50 text-blue-600 border border-blue-200 rounded-lg py-2 mb-4 font-semibold hover:bg-blue-100 transition-colors">+ Yeni Sohbet</button>
+            </div>
         </div>
-        <div class="p-4 flex-1 overflow-y-auto" id="gecmisListesi">
-            <button id="yeniSohbetBtn" class="w-full bg-blue-50 text-blue-600 border border-blue-200 rounded-lg py-2 mb-4 font-semibold hover:bg-blue-100 transition-colors">+ Yeni Sohbet</button>
-        </div>
+
+        <!-- ÜST MENÜ -->
+        <header class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center shadow-sm relative z-10 shrink-0">
+            <button id="menuBtn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600 z-20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            
+            <div class="flex flex-col items-center absolute left-1/2 transform -translate-x-1/2">
+                <div class="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center mb-1">
+                    <span class="text-blue-500 text-xl font-bold">N</span>
+                </div>
+                <h1 class="text-sm font-black tracking-widest text-gray-900">NEXT<span class="text-blue-500">AI</span></h1>
+            </div>
+
+            <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors truncate max-w-[130px] z-20">
+                Giriş Yap
+            </button>
+        </header>
+
+        <!-- SOHBET ALANI -->
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-gray-50">
+            <div class="flex flex-wrap gap-2 justify-center mb-4" id="suggestions">
+                <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50 shadow-sm">Bana kısa bir bilim kurgu hikayesi yaz.</button>
+                <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50 shadow-sm">Günün motive edici sözü nedir?</button>
+                <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50 shadow-sm">Yapay zeka gelecekte hayatımızı nasıl değiştirecek?</button>
+            </div>
+
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 shrink-0">
+                    <span class="text-blue-500 font-bold text-xs">N</span>
+                </div>
+                <div class="ai-message-content bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[85%] text-sm leading-relaxed">
+                    <p>Geleceğe hoş geldiniz. Ben <strong>NextAI</strong>. Sıradanlığı yok etmek ve size sınırları aşan bir deneyim sunmak için tasarlandım. Evreni keşfetmeye hazır mısınız? 🚀</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- ALT GİRİŞ ALANI -->
+        <footer class="bg-white border-t border-gray-200 p-3 sm:p-4 flex gap-2 items-center shrink-0">
+            <button id="upload-btn" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+            </button>
+            <input type="file" id="image-input" accept="image/*" style="display: none;" />
+            
+            <button id="mic-btn" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+            </button>
+
+            <input type="text" id="user-input" placeholder="Bir mesaj yazın..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            
+            <button id="send-btn" class="bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </footer>
     </div>
-
-    <!-- ÜST MENÜ -->
-    <header class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center shadow-sm relative z-10 shrink-0">
-        <button id="menuBtn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600 z-20">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
-        
-        <div class="flex flex-col items-center absolute left-1/2 transform -translate-x-1/2">
-            <div class="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center mb-1">
-                <span class="text-blue-500 text-xl font-bold">N</span>
-            </div>
-            <h1 class="text-sm font-black tracking-widest text-gray-900">NEXT<span class="text-blue-500">AI</span></h1>
-        </div>
-
-        <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors truncate max-w-[130px] z-20">
-            Giriş Yap
-        </button>
-    </header>
-
-    <!-- SOHBET ALANI -->
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-        <div class="flex flex-wrap gap-2 justify-center mb-4" id="suggestions">
-            <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50">Bana kısa bir bilim kurgu hikayesi yaz.</button>
-            <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50">Günün motive edici sözü nedir?</button>
-            <button class="suggestion-btn bg-white border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-full hover:bg-gray-50">Yapay zeka gelecekte hayatımızı nasıl değiştirecek?</button>
-        </div>
-
-        <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 shrink-0">
-                <span class="text-blue-500 font-bold text-xs">N</span>
-            </div>
-            <div class="ai-message-content bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[85%] text-sm leading-relaxed">
-                <p>Geleceğe hoş geldiniz. Ben <strong>NextAI</strong>. Sıradanlığı yok etmek ve size sınırları aşan bir deneyim sunmak için tasarlandım. Evreni keşfetmeye hazır mısınız? 🚀</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- ALT GİRİŞ ALANI -->
-    <footer class="bg-white border-t border-gray-200 p-3 sm:p-4 flex gap-2 items-center shrink-0">
-        <button id="upload-btn" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-        </button>
-        <input type="file" id="image-input" accept="image/*" style="display: none;" />
-        
-        <button id="mic-btn" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-        </button>
-
-        <input type="text" id="user-input" placeholder="Bir mesaj yazın..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-        
-        <button id="send-btn" class="bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-        </button>
-    </footer>
 
     <!-- TOAST BİLDİRİM KUTUSU -->
     <div id="toastBildirim" class="fixed bottom-24 right-5 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 z-50 flex items-center gap-2">
@@ -359,14 +363,4 @@
                         if (parsedCevap.charAt(i) === '<') {
                             const tagEnd = parsedCevap.indexOf('>', i);
                             if (tagEnd !== -1) {
-                                targetDiv.innerHTML += parsedCevap.substring(i, tagEnd + 1);
-                                i = tagEnd + 1;
-                                setTimeout(yazdir, 0); 
-                                return;
-                            }
-                        }
-                        targetDiv.innerHTML += parsedCevap.charAt(i);
-                        i++;
-                        chatContainer.scrollTop = chatContainer.scrollHeight;
-                        setTimeout(yazdir, hiz);
-                    } else {
+                                targetDiv.innerHTML += parsedCevap.substring(i, tagEnd +
